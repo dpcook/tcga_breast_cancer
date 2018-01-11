@@ -1,0 +1,16 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Test code
+This is some text code
+```{r}
+2+2
+```
+
+And a quick plot
+```{r, fig.width=4, fig.height=3.5}
+plot(c(1,2,3,4,5), col="red", pch=20)
+```
+
