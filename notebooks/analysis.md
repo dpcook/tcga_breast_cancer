@@ -15,7 +15,8 @@ Breast Cancer TCGA Analysis
         -   [Averages for each cluster](#averages-for-each-cluster)
         -   [Across all samples](#across-all-samples)
 -   [Gene-gene plots](#gene-gene-plots)
-    -   [AR vs. Sox10 in TNBC samples](#ar-vs.-sox10-in-tnbc-samples)
+    -   [AR vs. Markers of clusters](#ar-vs.-markers-of-clusters)
+    -   [AR vs. Markers of clusters w/ subset](#ar-vs.-markers-of-clusters-w-subset)
 
 Dependencies
 ============
@@ -24,14 +25,14 @@ Dependencies
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ────────────────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
+    ## ── Attaching packages ──────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
 
     ## ✔ ggplot2 2.2.1     ✔ purrr   0.2.4
     ## ✔ tibble  1.4.1     ✔ dplyr   0.7.4
     ## ✔ tidyr   0.7.2     ✔ stringr 1.2.0
     ## ✔ readr   1.1.1     ✔ forcats 0.2.0
 
-    ## ── Conflicts ───────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ─────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -531,8 +532,53 @@ Gene-gene plots
 
 The manuscript dives into androgen receptor (AR) expression patterns across molecular subtypes. I just want to make some plots comparing AR to other markers across each cluster. All this info is contained in the 'dat' data frame right now
 
-AR vs. Sox10 in TNBC samples
-----------------------------
+AR vs. Markers of clusters
+--------------------------
+
+``` r
+ar.sox10 <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"sox10"]+1))) +
+  geom_point(size=1.5, alpha=0.5, aes(color=Cluster)) +
+  xlab("AR") + ylab("SOX10") +
+  scale_colour_manual(values=colors[c(1,2,3)]) +
+  theme_classic() + 
+  theme(axis.text=element_text(size=10, color='black'),
+        axis.title=element_text(size=12))
+ggsave(ar.sox10, file="../figs/ar.sox10.pdf", width=3.75, height=2.9)
+ar.sox10
+```
+
+![](analysis_files/figure-markdown_github/unnamed-chunk-24-1.png)
+
+``` r
+ar.her2 <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"her2"]+1))) +
+  geom_point(size=1.5, alpha=0.5, aes(color=Cluster)) +
+  xlab("AR") + ylab("HER2") +
+  scale_colour_manual(values=colors[c(1,2,3)]) +
+  theme_classic() + 
+  theme(axis.text=element_text(size=10, color='black'),
+        axis.title=element_text(size=12))
+ggsave(ar.her2, file="../figs/ar.her2.pdf", width=3.75, height=2.9)
+ar.her2
+```
+
+![](analysis_files/figure-markdown_github/unnamed-chunk-24-2.png)
+
+``` r
+ar.pgr <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"pgr"]+1))) +
+  geom_point(size=1.5, alpha=0.5, aes(color=Cluster)) +
+  xlab("AR") + ylab("PR") +
+  scale_colour_manual(values=colors[c(1,2,3)]) +
+  theme_classic() + 
+  theme(axis.text=element_text(size=10, color='black'),
+        axis.title=element_text(size=12))
+ggsave(ar.pgr, file="../figs/ar.pgr.pdf", width=3.75, height=2.9)
+ar.pgr
+```
+
+![](analysis_files/figure-markdown_github/unnamed-chunk-24-3.png)
+
+AR vs. Markers of clusters w/ subset
+------------------------------------
 
 ``` r
 dat.tnbc <- filter(dat, Cluster==2)
@@ -571,16 +617,16 @@ ggsave(ar.luminal, file="../figs/ar.pr.luminal.pdf", width=3.25, height=2.9)
 ar.tnbc
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-24-1.png)
+![](analysis_files/figure-markdown_github/unnamed-chunk-25-1.png)
 
 ``` r
 ar.her2
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-24-2.png)
+![](analysis_files/figure-markdown_github/unnamed-chunk-25-2.png)
 
 ``` r
 ar.luminal
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-24-3.png)
+![](analysis_files/figure-markdown_github/unnamed-chunk-25-3.png)
