@@ -240,6 +240,34 @@ summary(gene.clusters$Cluster)
 
 Heatmap top to bottom: 2, 3, 4, 1
 
+#### Where are specific markers?
+We want to identify specifically where SOX10, AR, PGR, and HER2 are
+
+```{r}
+heatmap.avg.order <- marker.heatmap$tree_row$order
+length(heatmap.avg.order)
+```
+
+##### SOX10
+```{r}
+which(sig.markers$gene_id[heatmap.avg.order] == sox10)
+```
+
+##### AR
+```{r}
+which(sig.markers$gene_id[heatmap.avg.order] == ar)
+```
+
+##### PGR
+```{r}
+which(sig.markers$gene_id[heatmap.avg.order] == pgr)
+```
+
+##### HER2
+```{r}
+which(sig.markers$gene_id[heatmap.avg.order] == her2)
+```
+
 ### Across all samples
 
 Getting the matrix ready
@@ -289,6 +317,16 @@ marker.exp.heatmap <- pheatmap(t(exp.markers[gene.order, sample.order]),
 plot(marker.exp.heatmap$gtable)
 ```
 
+#### Where are specific markers in this heatmap
+
+```{r}
+which(gene.order==sox10)
+which(gene.order==ar)
+which(gene.order==pgr)
+which(gene.order==her2)
+```
+
+
 #Gene-gene plots
 
 The manuscript dives into androgen receptor (AR) expression patterns across molecular subtypes. I just want to make some plots comparing AR to other markers across each cluster. All this info is contained in the 'dat' data frame right now
@@ -298,8 +336,13 @@ The manuscript dives into androgen receptor (AR) expression patterns across mole
 ```{r, fig.width=3.75, fig.height=2.9}
 ar.sox10 <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"sox10"]+1))) +
   geom_point(size=1.5, alpha=0.5, aes(color=Cluster)) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"sox10"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("SOX10") +
   scale_colour_manual(values=colors[c(1,2,3)]) +
+  scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"sox10"]+1))+0.5)) +
   theme_classic() + 
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -308,8 +351,13 @@ ar.sox10
 
 ar.her2 <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"her2"]+1))) +
   geom_point(size=1.5, alpha=0.5, aes(color=Cluster)) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"her2"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("HER2") +
   scale_colour_manual(values=colors[c(1,2,3)]) +
+  scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"her2"]+1))+0.5)) +
   theme_classic() + 
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -318,8 +366,13 @@ ar.her2
 
 ar.pgr <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"pgr"]+1))) +
   geom_point(size=1.5, alpha=0.5, aes(color=Cluster)) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"pgr"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("PR") +
   scale_colour_manual(values=colors[c(1,2,3)]) +
+  scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"pgr"]+1))+0.5)) +
   theme_classic() + 
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -335,8 +388,12 @@ dat.tnbc <- filter(dat, Cluster==2)
 ar.tnbc <- ggplot(dat.tnbc, 
                   aes(x=log2(dat.tnbc[,"ar"]+1), y=log2(dat.tnbc[,"sox10"]+1))) + 
   geom_point(size=1.5, alpha=0.75, colour=colors[1]) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"sox10"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("SOX10") +
   scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"sox10"]+1))+0.5)) +
   theme_classic() + 
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -346,8 +403,12 @@ dat.her2 <- filter(dat, Cluster==3)
 ar.her2 <- ggplot(dat.her2, 
                   aes(x=log2(dat.her2[,"ar"]+1), y=log2(dat.her2[,"her2"]+1))) +
   geom_point(size=1.5, alpha=0.75, colour=colors[2]) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"her2"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("HER2") +
   scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"her2"]+1))+0.5)) +
   theme_classic() +
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -355,10 +416,15 @@ ggsave(ar.her2, file="../figs/ar.her2.her2.pdf", width=3.25, height=2.9)
 
 dat.luminal <- filter(dat, Cluster==1)
 ar.luminal <- ggplot(dat.luminal, 
-                  aes(x=log2(dat.luminal[,"ar"]+1), y=log2(dat.luminal[,"pgr"]+1))) +
+                  aes(x=log2(dat.luminal[,"ar"]+1),
+                      y=log2(dat.luminal[,"pgr"]+1))) +
   geom_point(size=1.5, alpha=0.75, colour=colors[3]) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"pgr"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("PR") +
   scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"pgr"]+1))+0.5)) +
   theme_classic() +
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -369,5 +435,146 @@ ar.her2
 ar.luminal
 ```
 
+## Percentage of cells in "quadrants"
+
+The paper discusses how genes that are highly expressed when AR is low is indicative of TNBC. We define an arbitrary (based on density) gate of AR expression at log2(counts+1)=9. The cutoff of the other markers is defined as half of the max log2(counts+1) value.
+
+### TNBC
+
+```{r}
+#Top left
+##Pass filter
+nrow(filter(dat.tnbc, log2(ar + 1) < 9 & 
+              log2(sox10 + 1) > mean(log2(dat[,"sox10"] + 1))))
+
+##Percentage
+nrow(filter(dat.tnbc, log2(ar + 1) < 9 & 
+              log2(sox10 + 1) > mean(log2(dat[,"sox10"] + 1)))) / nrow(dat.tnbc)
+```
+
+```{r}
+#Top right
+##Pass filter
+nrow(filter(dat.tnbc, log2(ar + 1) > 9 & 
+              log2(sox10 + 1) > mean(log2(dat[,"sox10"] + 1))))
+
+##Percentage
+nrow(filter(dat.tnbc, log2(ar + 1) > 9 & 
+              log2(sox10 + 1) > mean(log2(dat[,"sox10"] + 1)))) / nrow(dat.tnbc)
+```
+
+```{r}
+#Bottom left
+##Pass filter
+nrow(filter(dat.tnbc, log2(ar + 1) < 9 & 
+              log2(sox10 + 1) < mean(log2(dat[,"sox10"] + 1))))
+
+##Percentage
+nrow(filter(dat.tnbc, log2(ar + 1) < 9 & 
+              log2(sox10 + 1) < mean(log2(dat[,"sox10"] + 1)))) / nrow(dat.tnbc)
+```
+
+```{r}
+#Bottom right
+##Pass filter
+nrow(filter(dat.tnbc, log2(ar + 1) > 9 & 
+              log2(sox10 + 1) < mean(log2(dat[,"sox10"] + 1))))
+
+##Percentage
+nrow(filter(dat.tnbc, log2(ar + 1) > 9 & 
+              log2(sox10 + 1) < mean(log2(dat[,"sox10"] + 1)))) / nrow(dat.tnbc)
+```
+
+### HER2
+
+```{r}
+#Top left
+##Pass filter
+nrow(filter(dat.her2, log2(ar + 1) < 9 & 
+              log2(her2 + 1) > mean(log2(dat[,"her2"] + 1))))
+
+##Percentage
+nrow(filter(dat.tnbc, log2(ar + 1) < 9 & 
+              log2(her2 + 1) > mean(log2(dat[,"her2"] + 1)))) / nrow(dat.her2)
+```
+
+```{r}
+#Top right
+##Pass filter
+nrow(filter(dat.her2, log2(ar + 1) > 9 & 
+              log2(her2 + 1) > mean(log2(dat[,"her2"] + 1))))
+
+##Percentage
+nrow(filter(dat.her2, log2(ar + 1) > 9 & 
+              log2(her2 + 1) > mean(log2(dat[,"her2"] + 1)))) / nrow(dat.her2)
+```
+
+```{r}
+#Bottom left
+##Pass filter
+nrow(filter(dat.her2, log2(ar + 1) < 9 & 
+              log2(her2 + 1) < mean(log2(dat[,"her2"] + 1))))
+
+##Percentage
+nrow(filter(dat.her2, log2(ar + 1) < 9 & 
+              log2(her2 + 1) < mean(log2(dat[,"her2"] + 1)))) / nrow(dat.her2)
+```
+
+```{r}
+#Bottom right
+##Pass filter
+nrow(filter(dat.her2, log2(ar + 1) > 9 & 
+              log2(her2 + 1) < mean(log2(dat[,"her2"] + 1))))
+
+##Percentage
+nrow(filter(dat.her2, log2(ar + 1) > 9 & 
+              log2(her2 + 1) < mean(log2(dat[,"her2"] + 1)))) / nrow(dat.her2)
+```
+
+### Luminal
+
+```{r}
+#Top left
+##Pass filter
+nrow(filter(dat.luminal, log2(ar + 1) < 9 & 
+              log2(pgr + 1) > mean(log2(dat[,"pgr"] + 1))))
+
+##Percentage
+nrow(filter(dat.luminal, log2(ar + 1) < 9 & 
+              log2(pgr + 1) > mean(log2(dat[,"pgr"] + 1)))) / nrow(dat.luminal)
+```
+
+```{r}
+#Top right
+##Pass filter
+nrow(filter(dat.luminal, log2(ar + 1) > 9 & 
+              log2(pgr + 1) > mean(log2(dat[,"pgr"] + 1))))
+
+##Percentage
+nrow(filter(dat.luminal, log2(ar + 1) > 9 & 
+              log2(pgr + 1) > mean(log2(dat[,"pgr"] + 1)))) / nrow(dat.luminal)
+```
+
+```{r}
+#Bottom left
+##Pass filter
+nrow(filter(dat.luminal, log2(ar + 1) < 9 & 
+              log2(pgr + 1) < mean(log2(dat[,"pgr"] + 1))))
+
+##Percentage
+nrow(filter(dat.her2, log2(ar + 1) < 9 & 
+              log2(pgr + 1) < mean(log2(dat[,"pgr"] + 1)))) / nrow(dat.luminal)
+```
+
+```{r}
+#Bottom right
+##Pass filter
+nrow(filter(dat.luminal, log2(ar + 1) > 9 & 
+              log2(pgr + 1) < mean(log2(dat[,"pgr"] + 1))))
+
+##Percentage
+nrow(filter(dat.luminal, log2(ar + 1) > 9 & 
+              log2(pgr + 1) < mean(log2(dat[,"pgr"] + 1)))) / nrow(dat.luminal)
+```
 
 

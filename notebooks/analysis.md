@@ -17,6 +17,10 @@ Breast Cancer TCGA Analysis
 -   [Gene-gene plots](#gene-gene-plots)
     -   [AR vs. Markers of clusters](#ar-vs.-markers-of-clusters)
     -   [AR vs. Markers of clusters w/ subset](#ar-vs.-markers-of-clusters-w-subset)
+    -   [Percentage of cells in "quadrants"](#percentage-of-cells-in-quadrants)
+        -   [TNBC](#tnbc)
+        -   [HER2](#her2-1)
+        -   [Luminal](#luminal)
 
 Dependencies
 ============
@@ -25,14 +29,14 @@ Dependencies
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ──────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
+    ## ── Attaching packages ─────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
 
     ## ✔ ggplot2 2.2.1     ✔ purrr   0.2.4
     ## ✔ tibble  1.4.1     ✔ dplyr   0.7.4
     ## ✔ tidyr   0.7.2     ✔ stringr 1.2.0
     ## ✔ readr   1.1.1     ✔ forcats 0.2.0
 
-    ## ── Conflicts ─────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -475,6 +479,49 @@ summary(gene.clusters$Cluster)
 
 Heatmap top to bottom: 2, 3, 4, 1
 
+#### Where are specific markers?
+
+We want to identify specifically where SOX10, AR, PGR, and HER2 are
+
+``` r
+heatmap.avg.order <- marker.heatmap$tree_row$order
+length(heatmap.avg.order)
+```
+
+    ## [1] 112
+
+##### SOX10
+
+``` r
+which(sig.markers$gene_id[heatmap.avg.order] == sox10)
+```
+
+    ## [1] 5
+
+##### AR
+
+``` r
+which(sig.markers$gene_id[heatmap.avg.order] == ar)
+```
+
+    ## [1] 111
+
+##### PGR
+
+``` r
+which(sig.markers$gene_id[heatmap.avg.order] == pgr)
+```
+
+    ## [1] 26
+
+##### HER2
+
+``` r
+which(sig.markers$gene_id[heatmap.avg.order] == her2)
+```
+
+    ## [1] 55
+
 ### Across all samples
 
 Getting the matrix ready
@@ -525,7 +572,33 @@ marker.exp.heatmap <- pheatmap(t(exp.markers[gene.order, sample.order]),
 plot(marker.exp.heatmap$gtable)
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-23-1.png)
+![](analysis_files/figure-markdown_github/unnamed-chunk-28-1.png)
+
+#### Where are specific markers in this heatmap
+
+``` r
+which(gene.order==sox10)
+```
+
+    ## [1] 10
+
+``` r
+which(gene.order==ar)
+```
+
+    ## [1] 100
+
+``` r
+which(gene.order==pgr)
+```
+
+    ## [1] 26
+
+``` r
+which(gene.order==her2)
+```
+
+    ## [1] 58
 
 Gene-gene plots
 ===============
@@ -538,8 +611,13 @@ AR vs. Markers of clusters
 ``` r
 ar.sox10 <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"sox10"]+1))) +
   geom_point(size=1.5, alpha=0.5, aes(color=Cluster)) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"sox10"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("SOX10") +
   scale_colour_manual(values=colors[c(1,2,3)]) +
+  scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"sox10"]+1))+0.5)) +
   theme_classic() + 
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -547,13 +625,18 @@ ggsave(ar.sox10, file="../figs/ar.sox10.pdf", width=3.75, height=2.9)
 ar.sox10
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-24-1.png)
+![](analysis_files/figure-markdown_github/unnamed-chunk-30-1.png)
 
 ``` r
 ar.her2 <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"her2"]+1))) +
   geom_point(size=1.5, alpha=0.5, aes(color=Cluster)) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"her2"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("HER2") +
   scale_colour_manual(values=colors[c(1,2,3)]) +
+  scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"her2"]+1))+0.5)) +
   theme_classic() + 
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -561,13 +644,18 @@ ggsave(ar.her2, file="../figs/ar.her2.pdf", width=3.75, height=2.9)
 ar.her2
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-24-2.png)
+![](analysis_files/figure-markdown_github/unnamed-chunk-30-2.png)
 
 ``` r
 ar.pgr <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"pgr"]+1))) +
   geom_point(size=1.5, alpha=0.5, aes(color=Cluster)) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"pgr"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("PR") +
   scale_colour_manual(values=colors[c(1,2,3)]) +
+  scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"pgr"]+1))+0.5)) +
   theme_classic() + 
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -575,7 +663,7 @@ ggsave(ar.pgr, file="../figs/ar.pgr.pdf", width=3.75, height=2.9)
 ar.pgr
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-24-3.png)
+![](analysis_files/figure-markdown_github/unnamed-chunk-30-3.png)
 
 AR vs. Markers of clusters w/ subset
 ------------------------------------
@@ -585,8 +673,12 @@ dat.tnbc <- filter(dat, Cluster==2)
 ar.tnbc <- ggplot(dat.tnbc, 
                   aes(x=log2(dat.tnbc[,"ar"]+1), y=log2(dat.tnbc[,"sox10"]+1))) + 
   geom_point(size=1.5, alpha=0.75, colour=colors[1]) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"sox10"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("SOX10") +
   scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"sox10"]+1))+0.5)) +
   theme_classic() + 
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -596,8 +688,12 @@ dat.her2 <- filter(dat, Cluster==3)
 ar.her2 <- ggplot(dat.her2, 
                   aes(x=log2(dat.her2[,"ar"]+1), y=log2(dat.her2[,"her2"]+1))) +
   geom_point(size=1.5, alpha=0.75, colour=colors[2]) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"her2"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("HER2") +
   scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"her2"]+1))+0.5)) +
   theme_classic() +
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -605,10 +701,15 @@ ggsave(ar.her2, file="../figs/ar.her2.her2.pdf", width=3.25, height=2.9)
 
 dat.luminal <- filter(dat, Cluster==1)
 ar.luminal <- ggplot(dat.luminal, 
-                  aes(x=log2(dat.luminal[,"ar"]+1), y=log2(dat.luminal[,"pgr"]+1))) +
+                  aes(x=log2(dat.luminal[,"ar"]+1),
+                      y=log2(dat.luminal[,"pgr"]+1))) +
   geom_point(size=1.5, alpha=0.75, colour=colors[3]) +
+  geom_vline(xintercept=9, linetype="dashed") +
+  geom_hline(yintercept=mean(log2(dat[,"pgr"] + 1)),
+             linetype="dashed") +
   xlab("AR") + ylab("PR") +
   scale_x_continuous(limits=c(3.65,15.5)) +
+  scale_y_continuous(limits=c(0, max(log2(dat[,"pgr"]+1))+0.5)) +
   theme_classic() +
   theme(axis.text=element_text(size=10, color='black'),
         axis.title=element_text(size=12))
@@ -617,16 +718,231 @@ ggsave(ar.luminal, file="../figs/ar.pr.luminal.pdf", width=3.25, height=2.9)
 ar.tnbc
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-25-1.png)
+![](analysis_files/figure-markdown_github/unnamed-chunk-31-1.png)
 
 ``` r
 ar.her2
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-25-2.png)
+![](analysis_files/figure-markdown_github/unnamed-chunk-31-2.png)
 
 ``` r
 ar.luminal
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-25-3.png)
+![](analysis_files/figure-markdown_github/unnamed-chunk-31-3.png)
+
+Percentage of cells in "quadrants"
+----------------------------------
+
+The paper discusses how genes that are highly expressed when AR is low is indicative of TNBC. We define an arbitrary (based on density) gate of AR expression at log2(counts+1)=9. The cutoff of the other markers is defined as half of the max log2(counts+1) value.
+
+### TNBC
+
+``` r
+#Top left
+##Pass filter
+nrow(filter(dat.tnbc, log2(ar + 1) < 9 & 
+              log2(sox10 + 1) > mean(log2(dat[,"sox10"] + 1))))
+```
+
+    ## [1] 124
+
+``` r
+##Percentage
+nrow(filter(dat.tnbc, log2(ar + 1) < 9 & 
+              log2(sox10 + 1) > mean(log2(dat[,"sox10"] + 1)))) / nrow(dat.tnbc)
+```
+
+    ## [1] 0.5486726
+
+``` r
+#Top right
+##Pass filter
+nrow(filter(dat.tnbc, log2(ar + 1) > 9 & 
+              log2(sox10 + 1) > mean(log2(dat[,"sox10"] + 1))))
+```
+
+    ## [1] 33
+
+``` r
+##Percentage
+nrow(filter(dat.tnbc, log2(ar + 1) > 9 & 
+              log2(sox10 + 1) > mean(log2(dat[,"sox10"] + 1)))) / nrow(dat.tnbc)
+```
+
+    ## [1] 0.1460177
+
+``` r
+#Bottom left
+##Pass filter
+nrow(filter(dat.tnbc, log2(ar + 1) < 9 & 
+              log2(sox10 + 1) < mean(log2(dat[,"sox10"] + 1))))
+```
+
+    ## [1] 37
+
+``` r
+##Percentage
+nrow(filter(dat.tnbc, log2(ar + 1) < 9 & 
+              log2(sox10 + 1) < mean(log2(dat[,"sox10"] + 1)))) / nrow(dat.tnbc)
+```
+
+    ## [1] 0.1637168
+
+``` r
+#Bottom right
+##Pass filter
+nrow(filter(dat.tnbc, log2(ar + 1) > 9 & 
+              log2(sox10 + 1) < mean(log2(dat[,"sox10"] + 1))))
+```
+
+    ## [1] 32
+
+``` r
+##Percentage
+nrow(filter(dat.tnbc, log2(ar + 1) > 9 & 
+              log2(sox10 + 1) < mean(log2(dat[,"sox10"] + 1)))) / nrow(dat.tnbc)
+```
+
+    ## [1] 0.1415929
+
+### HER2
+
+``` r
+#Top left
+##Pass filter
+nrow(filter(dat.her2, log2(ar + 1) < 9 & 
+              log2(her2 + 1) > mean(log2(dat[,"her2"] + 1))))
+```
+
+    ## [1] 7
+
+``` r
+##Percentage
+nrow(filter(dat.tnbc, log2(ar + 1) < 9 & 
+              log2(her2 + 1) > mean(log2(dat[,"her2"] + 1)))) / nrow(dat.her2)
+```
+
+    ## [1] 0.0877193
+
+``` r
+#Top right
+##Pass filter
+nrow(filter(dat.her2, log2(ar + 1) > 9 & 
+              log2(her2 + 1) > mean(log2(dat[,"her2"] + 1))))
+```
+
+    ## [1] 107
+
+``` r
+##Percentage
+nrow(filter(dat.her2, log2(ar + 1) > 9 & 
+              log2(her2 + 1) > mean(log2(dat[,"her2"] + 1)))) / nrow(dat.her2)
+```
+
+    ## [1] 0.9385965
+
+``` r
+#Bottom left
+##Pass filter
+nrow(filter(dat.her2, log2(ar + 1) < 9 & 
+              log2(her2 + 1) < mean(log2(dat[,"her2"] + 1))))
+```
+
+    ## [1] 0
+
+``` r
+##Percentage
+nrow(filter(dat.her2, log2(ar + 1) < 9 & 
+              log2(her2 + 1) < mean(log2(dat[,"her2"] + 1)))) / nrow(dat.her2)
+```
+
+    ## [1] 0
+
+``` r
+#Bottom right
+##Pass filter
+nrow(filter(dat.her2, log2(ar + 1) > 9 & 
+              log2(her2 + 1) < mean(log2(dat[,"her2"] + 1))))
+```
+
+    ## [1] 0
+
+``` r
+##Percentage
+nrow(filter(dat.her2, log2(ar + 1) > 9 & 
+              log2(her2 + 1) < mean(log2(dat[,"her2"] + 1)))) / nrow(dat.her2)
+```
+
+    ## [1] 0
+
+### Luminal
+
+``` r
+#Top left
+##Pass filter
+nrow(filter(dat.luminal, log2(ar + 1) < 9 & 
+              log2(pgr + 1) > mean(log2(dat[,"pgr"] + 1))))
+```
+
+    ## [1] 5
+
+``` r
+##Percentage
+nrow(filter(dat.luminal, log2(ar + 1) < 9 & 
+              log2(pgr + 1) > mean(log2(dat[,"pgr"] + 1)))) / nrow(dat.luminal)
+```
+
+    ## [1] 0.005518764
+
+``` r
+#Top right
+##Pass filter
+nrow(filter(dat.luminal, log2(ar + 1) > 9 & 
+              log2(pgr + 1) > mean(log2(dat[,"pgr"] + 1))))
+```
+
+    ## [1] 659
+
+``` r
+##Percentage
+nrow(filter(dat.luminal, log2(ar + 1) > 9 & 
+              log2(pgr + 1) > mean(log2(dat[,"pgr"] + 1)))) / nrow(dat.luminal)
+```
+
+    ## [1] 0.7273731
+
+``` r
+#Bottom left
+##Pass filter
+nrow(filter(dat.luminal, log2(ar + 1) < 9 & 
+              log2(pgr + 1) < mean(log2(dat[,"pgr"] + 1))))
+```
+
+    ## [1] 3
+
+``` r
+##Percentage
+nrow(filter(dat.her2, log2(ar + 1) < 9 & 
+              log2(pgr + 1) < mean(log2(dat[,"pgr"] + 1)))) / nrow(dat.luminal)
+```
+
+    ## [1] 0.007726269
+
+``` r
+#Bottom right
+##Pass filter
+nrow(filter(dat.luminal, log2(ar + 1) > 9 & 
+              log2(pgr + 1) < mean(log2(dat[,"pgr"] + 1))))
+```
+
+    ## [1] 239
+
+``` r
+##Percentage
+nrow(filter(dat.luminal, log2(ar + 1) > 9 & 
+              log2(pgr + 1) < mean(log2(dat[,"pgr"] + 1)))) / nrow(dat.luminal)
+```
+
+    ## [1] 0.2637969
