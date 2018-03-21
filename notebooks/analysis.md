@@ -1,42 +1,20 @@
 Breast Cancer TCGA Analysis
 ================
 
--   [Dependencies](#dependencies)
--   [Load the data](#load-the-data)
--   [Grab expression values of gene set](#grab-expression-values-of-gene-set)
--   [Identify molecular subtypes of samples](#identify-molecular-subtypes-of-samples)
-    -   [Get cluster IDs for each sample](#get-cluster-ids-for-each-sample)
-    -   [Plot gene by cluster](#plot-gene-by-cluster)
--   [Constructing a TNBC gene signature](#constructing-a-tnbc-gene-signature)
-    -   [Construct models](#construct-models)
-    -   [Calculating effect size](#calculating-effect-size)
-    -   [Filtering by effect size](#filtering-by-effect-size)
-    -   [Plotting marker genes](#plotting-marker-genes)
-        -   [Averages for each cluster](#averages-for-each-cluster)
-        -   [Across all samples](#across-all-samples)
--   [Gene-gene plots](#gene-gene-plots)
-    -   [AR vs. Markers of clusters](#ar-vs.-markers-of-clusters)
-    -   [AR vs. Markers of clusters w/ subset](#ar-vs.-markers-of-clusters-w-subset)
-    -   [Percentage of cells in "quadrants"](#percentage-of-cells-in-quadrants)
-        -   [TNBC](#tnbc)
-        -   [HER2](#her2-1)
-        -   [Luminal](#luminal)
-
-Dependencies
-============
+# Dependencies
 
 ``` r
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ─────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
+    ## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
 
     ## ✔ ggplot2 2.2.1     ✔ purrr   0.2.4
-    ## ✔ tibble  1.4.1     ✔ dplyr   0.7.4
-    ## ✔ tidyr   0.7.2     ✔ stringr 1.2.0
-    ## ✔ readr   1.1.1     ✔ forcats 0.2.0
+    ## ✔ tibble  1.4.2     ✔ dplyr   0.7.4
+    ## ✔ tidyr   0.8.0     ✔ stringr 1.3.0
+    ## ✔ readr   1.1.1     ✔ forcats 0.3.0
 
-    ## ── Conflicts ────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -164,10 +142,12 @@ library(useful)
 library(RColorBrewer)
 ```
 
-Load the data
-=============
+# Load the data
 
-Gene-level expression data from the breast cancer TCGA cohort was downloaded [here](http://duffel.rail.bio/recount/TCGA/rse_gene_breast.Rdata). I'll work with a local copy here.
+Gene-level expression data from the breast cancer TCGA cohort was
+downloaded
+[here](http://duffel.rail.bio/recount/TCGA/rse_gene_breast.Rdata). I’ll
+work with a local copy here.
 
 ``` r
 load("../data/rse_gene_breast.Rdata")
@@ -176,10 +156,10 @@ exp <- assay(rse)
 gene.data <- as.data.frame(rowData(rse))
 ```
 
-Grab expression values of gene set
-==================================
+# Grab expression values of gene set
 
-We're using a manually selected gene list to explore in the data. Kind of an ugly way to grab a data frame of expression, but it works.
+We’re using a manually selected gene list to explore in the data. Kind
+of an ugly way to grab a data frame of expression, but it works.
 
 ``` r
 sox10 <- filter(gene.data, symbol=="SOX10")$gene_id
@@ -212,10 +192,12 @@ dat <- data.frame(sox10=exp[sox10,],
 
 This data frame will be used for plotting gene-gene expression plots.
 
-Identify molecular subtypes of samples
-======================================
+# Identify molecular subtypes of samples
 
-Breast cancer is often classified based on the expression of the hormone receptors Her2 (ERBB2), Esr1, and Pr. We'll cluster patients based on their expression.
+Breast cancer is often classified based on the expression of the hormone
+receptors Her2 (ERBB2), Esr1, and Pr. We’ll cluster patients based on
+their
+expression.
 
 ``` r
 dat.mat <- as.matrix(dat[,c(2,3,4)]) %>% log1p() %>% scale(scale=T, center=T)
@@ -228,12 +210,12 @@ heatmap <- pheatmap(dat.mat, color=viridis(100),  scale="none", cluster_cols=F,
 plot(heatmap$gtable)
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-4-1.png)
+![](analysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
-The patients seem to stratify nicely into triple-negative (TNBC), HER2+, and luminal clusters.
+The patients seem to stratify nicely into triple-negative (TNBC), HER2+,
+and luminal clusters.
 
-Get cluster IDs for each sample
--------------------------------
+## Get cluster IDs for each sample
 
 We can retrieve the cluster ID from the heatmap object
 
@@ -248,16 +230,16 @@ table(clusters$Cluster)
     ##   1   2   3 
     ## 906 226 114
 
-Kind of annoying that it isn't clear which cluster is which, but based on the size, it's clear that Cluster 1 = Luminal, 2 = TNBC, 3 = HER2+
+Kind of annoying that it isn’t clear which cluster is which, but based
+on the size, it’s clear that Cluster 1 = Luminal, 2 = TNBC, 3 = HER2+
 
-Let's put this information into our data frame of expression values
+Let’s put this information into our data frame of expression values
 
 ``` r
 dat$Cluster <- factor(clusters$Cluster, levels=c(2,3,1))
 ```
 
-Plot gene by cluster
---------------------
+## Plot gene by cluster
 
 ``` r
 colors <- brewer.pal(8, "Dark2")[c(3,2,1)]
@@ -290,81 +272,189 @@ And actually running it
 plot_gene('sox10')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
 plot_gene('her2')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-2.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-2.png)<!-- -->
 
 ``` r
 plot_gene('esr1')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-3.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-3.png)<!-- -->
 
 ``` r
 plot_gene('pgr')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-4.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-4.png)<!-- -->
 
 ``` r
 plot_gene('lcn2')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-5.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-5.png)<!-- -->
 
 ``` r
 plot_gene('ceacam1')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-6.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-6.png)<!-- -->
 
 ``` r
 plot_gene('l1cam')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-7.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-7.png)<!-- -->
 
 ``` r
 plot_gene('slk')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-8.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-8.png)<!-- -->
 
 ``` r
 plot_gene('sox8')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-9.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-9.png)<!-- -->
 
 ``` r
 plot_gene('sox9')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-10.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-10.png)<!-- -->
 
 ``` r
 plot_gene('ar')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-11.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-11.png)<!-- -->
 
 ``` r
 plot_gene('pip')
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-9-12.png)
+![](analysis_files/figure-gfm/unnamed-chunk-9-12.png)<!-- -->
 
-Constructing a TNBC gene signature
-==================================
+## Heatmap with AR and SOX10 annotation
 
-We want to use an unbiased approach to see what genes are good markers of each of the clusters we identified. We'll just use an anova to look for genes with differences across the groups.
+We want to demonstrate that Sox10 is a better subtype marker than
+AR
 
-Construct models
-----------------
+``` r
+row_annotation <- data.frame(AR = scale(log2(dat$ar + 1), scale=T, center=T),
+                             SOX10 = scale(log2(dat$sox10 + 1), scale=T, center=T))
+rownames(row_annotation) <- rownames(dat.mat)
+
+row_annotation$AR[row_annotation$AR > 2] <- 2
+row_annotation$AR[row_annotation$AR < (-2)] <- -2
+row_annotation$SOX10[row_annotation$SOX10 > 2] <- 2
+row_annotation$SOX10[row_annotation$SOX10 < (-2)] <- -2
+
+ann_colors = list(
+  AR = viridis(100),
+  SOX10 = viridis(100))
+```
+
+``` r
+heatmap <- pheatmap(dat.mat, color=viridis(100),  scale="none", cluster_cols=F,
+         cluster_rows=T, cutree_rows=3, show_rownames=F, clustering_method="ward.D2",
+         annotation_row = row_annotation, annotation_colors = ann_colors,
+         annotation_legend=F,
+         file="../figs/receptor.heatmap.with_Sox10_AR.png",
+         width=2.75, height=6)
+plot(heatmap$gtable)
+```
+
+![](analysis_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+## Test to see if adding SOX10 to the clustering changes anything
+
+``` r
+dat.mat.2 <- cbind(dat.mat, scale(log2(dat$sox10 + 1), scale=T, center=T)) 
+dat.mat.2[dat.mat.2>=2] <- 2
+dat.mat.2[dat.mat.2<=(-2)] <- -2
+colnames(dat.mat.2) <- c("HER2" ,"ESR1", "PGR", "SOX10")
+heatmap <- pheatmap(dat.mat.2, color=viridis(100),  scale="none", cluster_cols=F,
+         cluster_rows=T, cutree_rows=3, show_rownames=F, clustering_method="ward.D2",
+         file="../figs/receptor.heatmap.clustered.with.sox10.png",
+         width=2.75, height=6)
+plot(heatmap$gtable)
+```
+
+![](analysis_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+### How many patients fall in each subtype with/without sox10 in the classification
+
+Before
+
+``` r
+table(clusters$Cluster)
+```
+
+    ## 
+    ##   1   2   3 
+    ## 906 226 114
+
+After
+
+``` r
+table(cutree(heatmap$tree_row, k=3))
+```
+
+    ## 
+    ##   1   2   3 
+    ## 912 225 109
+
+## Test to see if adding AR to the clustering changes anything
+
+``` r
+dat.mat.2 <- cbind(dat.mat, scale(log2(dat$ar + 1), scale=T, center=T)) 
+dat.mat.2[dat.mat.2>=2] <- 2
+dat.mat.2[dat.mat.2<=(-2)] <- -2
+colnames(dat.mat.2) <- c("HER2" ,"ESR1", "PGR", "AR")
+heatmap <- pheatmap(dat.mat.2, color=viridis(100),  scale="none", cluster_cols=F,
+         cluster_rows=T, cutree_rows=3, show_rownames=F, clustering_method="ward.D2",
+         file="../figs/receptor.heatmap.clustered.with.ar.png",
+         width=2.75, height=6)
+plot(heatmap$gtable)
+```
+
+![](analysis_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+### How many patients fall in each subtype with/without sox10 in the classification
+
+Before
+
+``` r
+table(clusters$Cluster)
+```
+
+    ## 
+    ##   1   2   3 
+    ## 906 226 114
+
+After
+
+``` r
+table(cutree(heatmap$tree_row, k=3))
+```
+
+    ## 
+    ##   1   2   3 
+    ## 895 209 142
+
+# Constructing a TNBC gene signature
+
+We want to use an unbiased approach to see what genes are good markers
+of each of the clusters we identified. We’ll just use an anova to look
+for genes with differences across the groups.
+
+## Construct models
 
 ``` r
 run_anova <- function(x){
@@ -375,7 +465,9 @@ run_anova <- function(x){
 }
 ```
 
-Run the function down the matrix, collecting BH-corrected p-values for each gene. First we'll just log-transform the matrix so it's more normally distributed.
+Run the function down the matrix, collecting BH-corrected p-values for
+each gene. First we’ll just log-transform the matrix so it’s more
+normally distributed.
 
 ``` r
 exp <- exp[rowSums(exp)!=0,] #remove zero variance rows
@@ -399,10 +491,11 @@ nrow(filter(cluster.models, q.val <= 0.01))
 
 The joys of large sample sizes. We need an effect-size cutoff.
 
-Calculating effect size
------------------------
+## Calculating effect size
 
-I'll calculate the average expression across clusters, and filter for genes with a high fold change between the highest and lowest values
+I’ll calculate the average expression across clusters, and filter for
+genes with a high fold change between the highest and lowest
+values
 
 ``` r
 exp <- exp[cluster.models$gene_id,] #to remove the few rows that have NA as gene
@@ -427,12 +520,12 @@ hist(cluster.models$diff, breaks=40, col="firebrick", pch=20,
      xlab="Exp. Difference", main="")
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-16-1.png)
+![](analysis_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
-Filtering by effect size
-------------------------
+## Filtering by effect size
 
-Cut off is really arbitrary here. We want to choose a cutoff that brings the marker list down to something manageable. We'll try markers
+Cut off is really arbitrary here. We want to choose a cutoff that brings
+the marker list down to something manageable. We’ll try markers
 
 ``` r
 sig.markers <- filter(cluster.models, q.val <= 0.01, diff >= 4)
@@ -441,8 +534,7 @@ nrow(sig.markers)
 
     ## [1] 112
 
-Plotting marker genes
----------------------
+## Plotting marker genes
 
 ### Averages for each cluster
 
@@ -460,7 +552,7 @@ marker.heatmap <- pheatmap(exp.averages[sig.markers$gene_id,],
 plot(marker.heatmap$gtable)
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-18-1.png)
+![](analysis_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
 
 And just grab the cluster ID for each marker
 
@@ -533,7 +625,10 @@ exp.markers[exp.markers > 1.25] <- 1.25
 exp.markers[exp.markers < (-1.25)] <- -1.25
 ```
 
-I want to use the ordering of the original heatmap used to subtype each sample. For the columns (genes), I'll order the columns simply by cluster ID, as ordered in the heatmap (ie. clusters 2, 3, 4, 1.
+I want to use the ordering of the original heatmap used to subtype each
+sample. For the columns (genes), I’ll order the columns simply by
+cluster ID, as ordered in the heatmap (ie. clusters 2, 3, 4,
+1.
 
 ``` r
 sig.markers <- arrange(sig.markers, desc(diff)) #intragroup order by diff
@@ -544,7 +639,8 @@ gene.order <- c(filter(sig.markers, Cluster == 2)$gene_id,
 sample.order <- heatmap$tree_row$order
 ```
 
-Set up annotation\_row and annotation\_col for pheatmap to identify what clusters things belong to
+Set up annotation\_row and annotation\_col for pheatmap to identify what
+clusters things belong to
 
 ``` r
 annotation_row <- clusters
@@ -572,7 +668,7 @@ marker.exp.heatmap <- pheatmap(t(exp.markers[gene.order, sample.order]),
 plot(marker.exp.heatmap$gtable)
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-28-1.png)
+![](analysis_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
 
 #### Where are specific markers in this heatmap
 
@@ -600,13 +696,15 @@ which(gene.order==her2)
 
     ## [1] 58
 
-Gene-gene plots
-===============
+\#Gene-gene plots
 
-The manuscript dives into androgen receptor (AR) expression patterns across molecular subtypes. I just want to make some plots comparing AR to other markers across each cluster. All this info is contained in the 'dat' data frame right now
+The manuscript dives into androgen receptor (AR) expression patterns
+across molecular subtypes. I just want to make some plots comparing AR
+to other markers across each cluster. All this info is contained in the
+‘dat’ data frame right
+now
 
-AR vs. Markers of clusters
---------------------------
+## AR vs. Markers of clusters
 
 ``` r
 ar.sox10 <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"sox10"]+1))) +
@@ -625,7 +723,7 @@ ggsave(ar.sox10, file="../figs/ar.sox10.pdf", width=3.75, height=2.9)
 ar.sox10
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-30-1.png)
+![](analysis_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
 
 ``` r
 ar.her2 <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"her2"]+1))) +
@@ -644,7 +742,7 @@ ggsave(ar.her2, file="../figs/ar.her2.pdf", width=3.75, height=2.9)
 ar.her2
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-30-2.png)
+![](analysis_files/figure-gfm/unnamed-chunk-38-2.png)<!-- -->
 
 ``` r
 ar.pgr <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"pgr"]+1))) +
@@ -663,10 +761,9 @@ ggsave(ar.pgr, file="../figs/ar.pgr.pdf", width=3.75, height=2.9)
 ar.pgr
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-30-3.png)
+![](analysis_files/figure-gfm/unnamed-chunk-38-3.png)<!-- -->
 
-AR vs. Markers of clusters w/ subset
-------------------------------------
+\#\#AR vs. Markers of clusters w/ subset
 
 ``` r
 dat.tnbc <- filter(dat, Cluster==2)
@@ -718,24 +815,26 @@ ggsave(ar.luminal, file="../figs/ar.pr.luminal.pdf", width=3.25, height=2.9)
 ar.tnbc
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-31-1.png)
+![](analysis_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
 
 ``` r
 ar.her2
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-31-2.png)
+![](analysis_files/figure-gfm/unnamed-chunk-39-2.png)<!-- -->
 
 ``` r
 ar.luminal
 ```
 
-![](analysis_files/figure-markdown_github/unnamed-chunk-31-3.png)
+![](analysis_files/figure-gfm/unnamed-chunk-39-3.png)<!-- -->
 
-Percentage of cells in "quadrants"
-----------------------------------
+## Percentage of cells in “quadrants”
 
-The paper discusses how genes that are highly expressed when AR is low is indicative of TNBC. We define an arbitrary (based on density) gate of AR expression at log2(counts+1)=9. The cutoff of the other markers is defined as half of the max log2(counts+1) value.
+The paper discusses how genes that are highly expressed when AR is low
+is indicative of TNBC. We define an arbitrary (based on density) gate of
+AR expression at log2(counts+1)=9. The cutoff of the other markers is
+defined as half of the max log2(counts+1) value.
 
 ### TNBC
 

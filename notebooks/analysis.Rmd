@@ -138,6 +138,82 @@ plot_gene('ar')
 plot_gene('pip')
 ```
 
+## Heatmap with AR and SOX10 annotation
+
+We want to demonstrate that Sox10 is a better subtype marker than AR
+
+```{r}
+row_annotation <- data.frame(AR = scale(log2(dat$ar + 1), scale=T, center=T),
+                             SOX10 = scale(log2(dat$sox10 + 1), scale=T, center=T))
+rownames(row_annotation) <- rownames(dat.mat)
+
+row_annotation$AR[row_annotation$AR > 2] <- 2
+row_annotation$AR[row_annotation$AR < (-2)] <- -2
+row_annotation$SOX10[row_annotation$SOX10 > 2] <- 2
+row_annotation$SOX10[row_annotation$SOX10 < (-2)] <- -2
+
+ann_colors = list(
+  AR = viridis(100),
+  SOX10 = viridis(100))
+```
+
+```{r}
+heatmap <- pheatmap(dat.mat, color=viridis(100),  scale="none", cluster_cols=F,
+         cluster_rows=T, cutree_rows=3, show_rownames=F, clustering_method="ward.D2",
+         annotation_row = row_annotation, annotation_colors = ann_colors,
+         annotation_legend=F,
+         file="../figs/receptor.heatmap.with_Sox10_AR.png",
+         width=2.75, height=6)
+plot(heatmap$gtable)
+```
+
+## Test to see if adding SOX10 to the clustering changes anything
+```{r}
+dat.mat.2 <- cbind(dat.mat, scale(log2(dat$sox10 + 1), scale=T, center=T)) 
+dat.mat.2[dat.mat.2>=2] <- 2
+dat.mat.2[dat.mat.2<=(-2)] <- -2
+colnames(dat.mat.2) <- c("HER2" ,"ESR1", "PGR", "SOX10")
+heatmap <- pheatmap(dat.mat.2, color=viridis(100),  scale="none", cluster_cols=F,
+         cluster_rows=T, cutree_rows=3, show_rownames=F, clustering_method="ward.D2",
+         file="../figs/receptor.heatmap.clustered.with.sox10.png",
+         width=2.75, height=6)
+plot(heatmap$gtable)
+```
+
+### How many patients fall in each subtype with/without sox10 in the classification
+
+Before
+```{r}
+table(clusters$Cluster)
+```
+After
+```{r}
+table(cutree(heatmap$tree_row, k=3))
+```
+
+## Test to see if adding AR to the clustering changes anything
+```{r}
+dat.mat.2 <- cbind(dat.mat, scale(log2(dat$ar + 1), scale=T, center=T)) 
+dat.mat.2[dat.mat.2>=2] <- 2
+dat.mat.2[dat.mat.2<=(-2)] <- -2
+colnames(dat.mat.2) <- c("HER2" ,"ESR1", "PGR", "AR")
+heatmap <- pheatmap(dat.mat.2, color=viridis(100),  scale="none", cluster_cols=F,
+         cluster_rows=T, cutree_rows=3, show_rownames=F, clustering_method="ward.D2",
+         file="../figs/receptor.heatmap.clustered.with.ar.png",
+         width=2.75, height=6)
+plot(heatmap$gtable)
+```
+
+### How many patients fall in each subtype with/without sox10 in the classification
+
+Before
+```{r}
+table(clusters$Cluster)
+```
+After
+```{r}
+table(cutree(heatmap$tree_row, k=3))
+```
 
 # Constructing a TNBC gene signature
 
