@@ -7,14 +7,14 @@ Breast Cancer TCGA Analysis
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
+    ## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
 
     ## ✔ ggplot2 2.2.1     ✔ purrr   0.2.4
     ## ✔ tibble  1.4.2     ✔ dplyr   0.7.4
     ## ✔ tidyr   0.8.0     ✔ stringr 1.3.0
     ## ✔ readr   1.1.1     ✔ forcats 0.3.0
 
-    ## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -375,6 +375,10 @@ plot(heatmap$gtable)
 ## Test to see if adding SOX10 to the clustering changes anything
 
 ``` r
+ar_annotation <- data.frame(AR=row_annotation$AR)
+rownames(ar_annotation) <- rownames(row_annotation)
+ar_col <- list(AR = viridis(100))
+
 dat.mat.2 <- cbind(dat.mat, scale(log2(dat$sox10 + 1), scale=T, center=T)) 
 dat.mat.2[dat.mat.2>=2] <- 2
 dat.mat.2[dat.mat.2<=(-2)] <- -2
@@ -382,6 +386,7 @@ colnames(dat.mat.2) <- c("HER2" ,"ESR1", "PGR", "SOX10")
 heatmap <- pheatmap(dat.mat.2, color=viridis(100),  scale="none", cluster_cols=F,
          cluster_rows=T, cutree_rows=3, show_rownames=F, clustering_method="ward.D2",
          file="../figs/receptor.heatmap.clustered.with.sox10.png",
+         annotation_row=ar_annotation, annotation_colors=ar_col, annotation_legend=F,
          width=2.75, height=6)
 plot(heatmap$gtable)
 ```
