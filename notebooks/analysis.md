@@ -7,14 +7,14 @@ Breast Cancer TCGA Analysis
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
+    ## ── Attaching packages ───────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
 
     ## ✔ ggplot2 2.2.1     ✔ purrr   0.2.4
     ## ✔ tibble  1.4.2     ✔ dplyr   0.7.4
     ## ✔ tidyr   0.8.0     ✔ stringr 1.3.0
     ## ✔ readr   1.1.1     ✔ forcats 0.3.0
 
-    ## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ──────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -415,22 +415,6 @@ table(cutree(heatmap$tree_row, k=3))
     ##   1   2   3 
     ## 912 225 109
 
-## Test to see if adding AR to the clustering changes anything
-
-``` r
-dat.mat.2 <- cbind(dat.mat, scale(log2(dat$ar + 1), scale=T, center=T)) 
-dat.mat.2[dat.mat.2>=2] <- 2
-dat.mat.2[dat.mat.2<=(-2)] <- -2
-colnames(dat.mat.2) <- c("HER2" ,"ESR1", "PGR", "AR")
-heatmap <- pheatmap(dat.mat.2, color=viridis(100),  scale="none", cluster_cols=F,
-         cluster_rows=T, cutree_rows=3, show_rownames=F, clustering_method="ward.D2",
-         file="../figs/receptor.heatmap.clustered.with.ar.png",
-         width=2.75, height=6)
-plot(heatmap$gtable)
-```
-
-![](analysis_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
-
 ### How many patients fall in each subtype with/without sox10 in the classification
 
 Before
@@ -451,7 +435,7 @@ table(cutree(heatmap$tree_row, k=3))
 
     ## 
     ##   1   2   3 
-    ## 895 209 142
+    ## 912 225 109
 
 # Constructing a TNBC gene signature
 
@@ -525,7 +509,7 @@ hist(cluster.models$diff, breaks=40, col="firebrick", pch=20,
      xlab="Exp. Difference", main="")
 ```
 
-![](analysis_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](analysis_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
 ## Filtering by effect size
 
@@ -557,7 +541,7 @@ marker.heatmap <- pheatmap(exp.averages[sig.markers$gene_id,],
 plot(marker.heatmap$gtable)
 ```
 
-![](analysis_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+![](analysis_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 And just grab the cluster ID for each marker
 
@@ -673,7 +657,7 @@ marker.exp.heatmap <- pheatmap(t(exp.markers[gene.order, sample.order]),
 plot(marker.exp.heatmap$gtable)
 ```
 
-![](analysis_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
+![](analysis_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
 
 #### Where are specific markers in this heatmap
 
@@ -728,7 +712,7 @@ ggsave(ar.sox10, file="../figs/ar.sox10.pdf", width=3.75, height=2.9)
 ar.sox10
 ```
 
-![](analysis_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
+![](analysis_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
 
 ``` r
 ar.her2 <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"her2"]+1))) +
@@ -747,7 +731,7 @@ ggsave(ar.her2, file="../figs/ar.her2.pdf", width=3.75, height=2.9)
 ar.her2
 ```
 
-![](analysis_files/figure-gfm/unnamed-chunk-38-2.png)<!-- -->
+![](analysis_files/figure-gfm/unnamed-chunk-37-2.png)<!-- -->
 
 ``` r
 ar.pgr <-  ggplot(dat, aes(x=log2(dat[,"ar"]+1), y=log2(dat[,"pgr"]+1))) +
@@ -766,7 +750,7 @@ ggsave(ar.pgr, file="../figs/ar.pgr.pdf", width=3.75, height=2.9)
 ar.pgr
 ```
 
-![](analysis_files/figure-gfm/unnamed-chunk-38-3.png)<!-- -->
+![](analysis_files/figure-gfm/unnamed-chunk-37-3.png)<!-- -->
 
 \#\#AR vs. Markers of clusters w/ subset
 
@@ -820,19 +804,19 @@ ggsave(ar.luminal, file="../figs/ar.pr.luminal.pdf", width=3.25, height=2.9)
 ar.tnbc
 ```
 
-![](analysis_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
+![](analysis_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
 
 ``` r
 ar.her2
 ```
 
-![](analysis_files/figure-gfm/unnamed-chunk-39-2.png)<!-- -->
+![](analysis_files/figure-gfm/unnamed-chunk-38-2.png)<!-- -->
 
 ``` r
 ar.luminal
 ```
 
-![](analysis_files/figure-gfm/unnamed-chunk-39-3.png)<!-- -->
+![](analysis_files/figure-gfm/unnamed-chunk-38-3.png)<!-- -->
 
 ## Percentage of cells in “quadrants”
 

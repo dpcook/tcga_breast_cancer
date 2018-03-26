@@ -196,19 +196,6 @@ After
 table(cutree(heatmap$tree_row, k=3))
 ```
 
-## Test to see if adding AR to the clustering changes anything
-```{r}
-dat.mat.2 <- cbind(dat.mat, scale(log2(dat$ar + 1), scale=T, center=T)) 
-dat.mat.2[dat.mat.2>=2] <- 2
-dat.mat.2[dat.mat.2<=(-2)] <- -2
-colnames(dat.mat.2) <- c("HER2" ,"ESR1", "PGR", "AR")
-heatmap <- pheatmap(dat.mat.2, color=viridis(100),  scale="none", cluster_cols=F,
-         cluster_rows=T, cutree_rows=3, show_rownames=F, clustering_method="ward.D2",
-         file="../figs/receptor.heatmap.clustered.with.ar.png",
-         width=2.75, height=6)
-plot(heatmap$gtable)
-```
-
 ### How many patients fall in each subtype with/without sox10 in the classification
 
 Before
